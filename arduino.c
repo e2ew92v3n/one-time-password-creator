@@ -4,6 +4,8 @@
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 String pad;
+String passwordList[50];
+int passwordIndex = 0;
 const byte numRows = 4;
 const byte numCols = 4;
 String password = "4321"; // 랜덤 1회용 비밀번호
@@ -42,12 +44,18 @@ void setup() {
 
 void loop() {
   readKeypad();
+  pad = "";
 
   if (keypressed == '#') {
-    if (pad == password) {
+    // 비밀번호 배열에서 비밀번호가 존재하는지 체크하는 if문
+    if (checkPassword(pad)) {
       lcd.setCursor(0, 1);
       lcd.print("DOOR OPEN");
       RGB_LED_GREEN();
+
+      deletePassword(pad); // 비밀번호를 사용하면 삭제
+      sendPassword(pad);
+
       delay(3000);
       RGB_LED_OFF();
     } else {
@@ -93,4 +101,32 @@ void RGB_LED_GREEN() {
   digitalWrite(redPin, LOW);
   digitalWrite(greenPin, HIGH);
   digitalWrite(bluePin, LOW);
+}
+
+// 비밀번호 배열을 조회해서 비밀번호가 있는지 체크하는 함수
+bool checkPassword(String enteredPassword) {
+  for (int i = 0; i < passwordIndex; i++) {
+    if (passwordList[i] == enteredPassword) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// 사용한 비밀번호를 배열에서 제거하는 함수
+void deletePassword(String enteredPassword) {
+  for (int i = 0; i < passwordIndex; i++) {
+    if (passwordList[i] == enteredPassword) {
+      for (int j = i; j < passwordIndex - 1; j++) {
+        passwordList[j] = passwordList[j + 1];
+      }
+      passwordIndex--;
+      break;
+    }
+  }
+}
+
+// 비밀번호를 사용하면 파이썬으로 전송함(파이썬에서도 삭제하기 위해)
+void sendPassword(String passwordToSend) {
+  Serial.println(passwordToSend);
 }

@@ -46,6 +46,15 @@ void loop() {
   readKeypad();
   pad = "";
 
+  // 파이썬에서 비밀번호를 전달받고 아두이노 배열에 비밀번호를 저장
+  if  (Serial.available()) {
+    String receivedPassword = Serial.readString();
+    receivedPassword.trim();
+    if (receivedPassword.length() > 0) {
+      savePassword(receivedPassword);
+    }
+  }
+
   if (keypressed == '#') {
     // 비밀번호 배열에서 비밀번호가 존재하는지 체크하는 if문
     if (checkPassword(pad)) {
@@ -129,4 +138,10 @@ void deletePassword(String enteredPassword) {
 // 비밀번호를 사용하면 파이썬으로 전송함(파이썬에서도 삭제하기 위해)
 void sendPassword(String passwordToSend) {
   Serial.println(passwordToSend);
+}
+
+// 아두이노 비밀번호 배열에 저장하는 함수
+void savePassword(String newPassword) {
+  passwordList[passwordIndex] = newPassword;
+  passwordIndex++;
 }
